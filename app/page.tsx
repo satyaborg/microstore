@@ -119,6 +119,8 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
         throw new Error("Failed to generate storefront");
       }
 
+      console.log("response", response);
+
       const aiResponse = await response.text();
 
       // Try to extract JSON from the response
@@ -130,17 +132,20 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
           const formattedProducts = await Promise.all(
             storeData.products.map(async (product, index) => {
               try {
-                const imageResponse = await fetch("/api/generate-product-image", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    productName: product.name,
-                    productDescription: product.description,
-                    category: product.category || prompt,
-                  }),
-                });
+                const imageResponse = await fetch(
+                  "/api/generate-product-image",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      productName: product.name,
+                      productDescription: product.description,
+                      category: product.category || prompt,
+                    }),
+                  }
+                );
 
                 if (imageResponse.ok) {
                   const imageData = await imageResponse.json();
@@ -159,7 +164,10 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                   };
                 }
               } catch (error) {
-                console.error(`Error generating image for ${product.name}:`, error);
+                console.error(
+                  `Error generating image for ${product.name}:`,
+                  error
+                );
                 // Fallback to placeholder
                 return {
                   ...product,
@@ -177,41 +185,54 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
     } catch (error) {
       console.error("Error generating storefront:", error);
       // Fallback to mock data with AI generated images
-      const mockProducts = await Promise.all([
-        {
-          id: 1,
-          name: `${prompt} Product 1`,
-          price: 24.99,
-          description: `Premium ${prompt.toLowerCase()} item with excellent quality`,
-        },
-        {
-          id: 2,
-          name: `${prompt} Product 2`,
-          price: 12.99,
-          description: `Popular ${prompt.toLowerCase()} choice for enthusiasts`,
-        },
-      ].map(async (product) => {
-        try {
-          const imageResponse = await fetch("/api/generate-product-image", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              productName: product.name,
-              productDescription: product.description,
-              category: prompt,
-            }),
-          });
+      const mockProducts = await Promise.all(
+        [
+          {
+            id: 1,
+            name: `${prompt} Product 1`,
+            price: 24.99,
+            description: `Premium ${prompt.toLowerCase()} item with excellent quality`,
+          },
+          {
+            id: 2,
+            name: `${prompt} Product 2`,
+            price: 12.99,
+            description: `Popular ${prompt.toLowerCase()} choice for enthusiasts`,
+          },
+        ].map(async (product) => {
+          try {
+            const imageResponse = await fetch("/api/generate-product-image", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                productName: product.name,
+                productDescription: product.description,
+                category: prompt,
+              }),
+            });
 
-          if (imageResponse.ok) {
-            const imageData = await imageResponse.json();
-            return {
-              ...product,
-              image: `data:${imageData.mediaType};base64,${imageData.base64}`,
-              imageData: imageData,
-            };
-          } else {
+            if (imageResponse.ok) {
+              const imageData = await imageResponse.json();
+              return {
+                ...product,
+                image: `data:${imageData.mediaType};base64,${imageData.base64}`,
+                imageData: imageData,
+              };
+            } else {
+              return {
+                ...product,
+                image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+                  product.name.slice(0, 20)
+                )}`,
+              };
+            }
+          } catch (error) {
+            console.error(
+              `Error generating fallback image for ${product.name}:`,
+              error
+            );
             return {
               ...product,
               image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
@@ -219,16 +240,8 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
               )}`,
             };
           }
-        } catch (error) {
-          console.error(`Error generating fallback image for ${product.name}:`, error);
-          return {
-            ...product,
-            image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
-              product.name.slice(0, 20)
-            )}`,
-          };
-        }
-      }));
+        })
+      );
       setGeneratedProducts(mockProducts);
     } finally {
       setIsGenerating(false);
@@ -444,7 +457,7 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-auto h-4 w-4 animate-spin" />
                       Generating...
                     </>
                   ) : (
@@ -488,8 +501,8 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                     Creating Your Store
                   </h3>
                   <p className="text-muted-foreground">
-                    Our AI is generating personalized products, store details, and custom product images
-                    for "{selectedCategory}"...
+                    Our AI is generating personalized products, store details,
+                    and custom product images for "{selectedCategory}"...
                   </p>
                   <div className="mt-4 w-full bg-border/20 rounded-full h-2">
                     <div

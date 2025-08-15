@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.6",
     "@ai-sdk/openai": "^2.0.14",
     "@ai-sdk/react": "^2.0.14",
     "@radix-ui/react-slot": "^1.2.3",
@@ -20,6 +21,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.4",
+    "google-trends-api": "^4.9.2",
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
     "postgres": "^3.4.7",

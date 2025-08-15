@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { experimental_generateImage } from "ai";
 
 export async function POST(req: Request) {
@@ -28,9 +28,9 @@ export async function POST(req: Request) {
     } Clean pure white background, centered composition, studio lighting with soft shadows, commercial quality, high-resolution, crisp details. Shot with professional camera, perfect for online store thumbnail. Product should be the main focus, well-lit from multiple angles, no distracting elements. Commercial advertising style, marketplace ready, conversion-optimized product image.`;
 
     const { image } = await experimental_generateImage({
-      model: openai.image("gpt-image-1"),
+      model: google.image("imagen-3.0-generate-002"),
       prompt: prompt,
-      size: "512x512",
+      aspectRatio: "1:1",
     });
 
     return Response.json({
