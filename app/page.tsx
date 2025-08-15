@@ -20,6 +20,7 @@ import {
   Menu,
   Minus,
   Plus,
+  RotateCcw,
   Shield,
   ShoppingCart,
   Star,
@@ -976,7 +977,7 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
               </Card>
 
               <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
-                <TrendingUp className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                <RotateCcw className="h-12 w-12 mx-auto mb-4 text-purple-500" />
                 <h3 className="font-semibold text-xl mb-2">
                   3x Higher Conversions
                 </h3>
@@ -987,13 +988,12 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
               </Card>
 
               <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
-                <Shield className="h-12 w-12 mx-auto mb-4 text-purple-500" />
+                <TrendingUp className="h-12 w-12 mx-auto mb-4 text-green-500" />
                 <h3 className="font-semibold text-xl mb-2">
-                  Enterprise Security
+                  Capitalize on Trends
                 </h3>
                 <p className="text-muted-foreground">
-                  Bank-level security with automated backups and 99.9% uptime
-                  guarantee.
+                  We find the hottest trends and help you capitalize on them.
                 </p>
               </Card>
             </div>
