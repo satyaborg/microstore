@@ -328,6 +328,74 @@ export default function AdLauncher() {
             </div>
           </CardContent>
         </Card>
+
+      {/* Product Suppliers */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🏭 Recommended Suppliers</CardTitle>
+          <p className="text-sm text-muted-foreground">Top-rated suppliers for your products</p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-blue-200">
+              <CardContent className="pt-6">
+                <div className="text-center space-y-3">
+                  <div className="text-lg font-semibold text-blue-700">Global Electronics Co.</div>
+                  <div className="text-2xl font-bold">3,247</div>
+                  <div className="text-sm text-muted-foreground">Products Available</div>
+                  <div className="flex items-center justify-center space-x-1">
+                    <span className="text-yellow-500">★★★★★</span>
+                    <span className="text-sm font-medium">4.8</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">📍 Shenzhen, China</div>
+                  <div className="space-y-1 text-xs">
+                    <div>⚡ 3-7 days shipping</div>
+                    <div>📦 Min order: $50</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-green-200">
+              <CardContent className="pt-6">
+                <div className="text-center space-y-3">
+                  <div className="text-lg font-semibold text-green-700">Premium Goods Ltd.</div>
+                  <div className="text-2xl font-bold">1,892</div>
+                  <div className="text-sm text-muted-foreground">Products Available</div>
+                  <div className="flex items-center justify-center space-x-1">
+                    <span className="text-yellow-500">★★★★☆</span>
+                    <span className="text-sm font-medium">4.6</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">📍 Mumbai, India</div>
+                  <div className="space-y-1 text-xs">
+                    <div>⚡ 5-10 days shipping</div>
+                    <div>📦 Min order: $25</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-purple-200">
+              <CardContent className="pt-6">
+                <div className="text-center space-y-3">
+                  <div className="text-lg font-semibold text-purple-700">Euro Fashion Hub</div>
+                  <div className="text-2xl font-bold">956</div>
+                  <div className="text-sm text-muted-foreground">Products Available</div>
+                  <div className="flex items-center justify-center space-x-1">
+                    <span className="text-yellow-500">★★★★★</span>
+                    <span className="text-sm font-medium">4.7</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">📍 Milan, Italy</div>
+                  <div className="space-y-1 text-xs">
+                    <div>⚡ 7-14 days shipping</div>
+                    <div>📦 Min order: $100</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
