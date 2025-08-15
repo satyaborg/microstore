@@ -105,7 +105,7 @@ Please provide a JSON response with the following structure:
   ]
 }
 
-Create 6-8 realistic products that would sell well for this concept. Include varied pricing ($5-$150 range) and compelling product descriptions that would convert customers. Make products specific and trendy.`;
+Create exactly 6 realistic products that would sell well for this concept. Include varied pricing ($5-$150 range) and compelling product descriptions that would convert customers. Make products specific and trendy.`;
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -259,20 +259,20 @@ Create 6-8 realistic products that would sell well for this concept. Include var
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-12">
             {generatedProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden">
                 {product.imageData ? (
                   <Image
                     {...product.imageData}
                     alt={product.name}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-80 object-cover"
                   />
                 ) : (
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-80 object-cover"
                   />
                 )}
                 <CardContent className="p-4">
