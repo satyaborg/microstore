@@ -11,11 +11,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Gradients from "@/components/gradients";
+import { Menu, X, Star, Zap, Shield, TrendingUp, Users, Clock } from "lucide-react";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showStorefront, setShowStorefront] = useState(false);
   const [generatedProducts, setGeneratedProducts] = useState([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const categories = [
     {
@@ -189,57 +191,202 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="font-bold text-xl">MicroStore</div>
-            <div className="flex items-center space-x-6">
-              <Button variant="ghost" size="sm">
-                Features
-              </Button>
-              <Button variant="ghost" size="sm">
-                Pricing
-              </Button>
-              <Button variant="ghost" size="sm">
-                About
-              </Button>
-              <Button variant="outline" size="sm">
-                Sign In
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
+              <Button variant="ghost" size="sm">Features</Button>
+              <Button variant="ghost" size="sm">Pricing</Button>
+              <Button variant="ghost" size="sm">About</Button>
+              <Button variant="outline" size="sm">Sign In</Button>
+              <Button size="sm">Start Free Trial</Button>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
           </div>
+
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-border/40 py-4">
+              <div className="flex flex-col space-y-3">
+                <Button variant="ghost" size="sm" className="justify-start">Features</Button>
+                <Button variant="ghost" size="sm" className="justify-start">Pricing</Button>
+                <Button variant="ghost" size="sm" className="justify-start">About</Button>
+                <Button variant="outline" size="sm">Sign In</Button>
+                <Button size="sm">Start Free Trial</Button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4 pt-8 pb-16 relative z-10 min-h-0">
-        <div className="max-w-5xl w-full">
-          <div className="text-center mb-12">
+      <main className="flex-1 relative z-10">
+        {/* Hero Section */}
+        <section className="flex items-center justify-center p-4 pt-16 pb-20">
+          <div className="max-w-6xl w-full text-center">
+            {/* Trust Signals */}
+            <div className="flex items-center justify-center space-x-6 mb-8 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-1">
+                <Users className="h-4 w-4" />
+                <span>Join 10,000+ entrepreneurs</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Shield className="h-4 w-4" />
+                <span>100% Secure</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Clock className="h-4 w-4" />
+                <span>Launch in 60 seconds</span>
+              </div>
+            </div>
+
             <h1 className="text-4xl md:text-5xl lg:text-6xl tracking-tight font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               What do you want to sell?
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Choose a category to start building your premium online store in
-              seconds
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
+              Launch your premium online store in seconds. No coding required, infinite possibilities. 
+              Average 3x higher conversion rates than traditional platforms.
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {categories.map((category) => (
-              <Card
-                key={category.name}
-                className="p-8 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-border/50 backdrop-blur-sm bg-card/80"
-                onClick={() => generateStorefront(category.name)}
-              >
-                <div className="text-center">
-                  <div className="text-5xl mb-6">{category.emoji}</div>
-                  <h3 className="font-semibold text-xl mb-3">
-                    {category.name}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {category.description}
-                  </p>
+            {/* Primary CTA */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+              <Button size="lg" className="text-lg px-8 py-6">
+                🚀 Start Free Trial - No Credit Card
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                Watch Demo (2 min)
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Why MicroStore?</h2>
+              <p className="text-xl text-muted-foreground">Everything you need to launch and scale your online business</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+              <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
+                <Zap className="h-12 w-12 mx-auto mb-4 text-blue-500" />
+                <h3 className="font-semibold text-xl mb-2">Lightning Fast Setup</h3>
+                <p className="text-muted-foreground">Go from idea to live store in under 60 seconds. No technical skills required.</p>
+              </Card>
+              
+              <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
+                <TrendingUp className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                <h3 className="font-semibold text-xl mb-2">3x Higher Conversions</h3>
+                <p className="text-muted-foreground">AI-optimized designs and checkout flows that actually convert visitors to customers.</p>
+              </Card>
+              
+              <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
+                <Shield className="h-12 w-12 mx-auto mb-4 text-purple-500" />
+                <h3 className="font-semibold text-xl mb-2">Enterprise Security</h3>
+                <p className="text-muted-foreground">Bank-level security with automated backups and 99.9% uptime guarantee.</p>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Social Proof Section */}
+        <section className="py-16 px-4 bg-muted/30">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Trusted by entrepreneurs worldwide</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/80">
+                <div className="flex items-center mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-muted-foreground mb-4">"Launched my jewelry store in 45 seconds. Made $2,000 in the first week!"</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 mr-3"></div>
+                  <div>
+                    <p className="font-semibold">Sarah Chen</p>
+                    <p className="text-sm text-muted-foreground">Fashion Entrepreneur</p>
+                  </div>
                 </div>
               </Card>
-            ))}
+
+              <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/80">
+                <div className="flex items-center mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-muted-foreground mb-4">"The AI suggestions helped me optimize my store. Conversion rate went from 1% to 4.2%!"</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-green-500 mr-3"></div>
+                  <div>
+                    <p className="font-semibold">Marcus Rodriguez</p>
+                    <p className="text-sm text-muted-foreground">Tech Gadgets Store</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/80">
+                <div className="flex items-center mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-muted-foreground mb-4">"Perfect for testing new product ideas. I've launched 5 successful stores this year!"</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-red-500 mr-3"></div>
+                  <div>
+                    <p className="font-semibold">Emma Thompson</p>
+                    <p className="text-sm text-muted-foreground">Serial Entrepreneur</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* Category Selection */}
+        <section className="py-16 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose your category</h2>
+              <p className="text-xl text-muted-foreground">Select a category to see your store come to life</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {categories.map((category) => (
+                <Card
+                  key={category.name}
+                  className="p-8 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-border/50 backdrop-blur-sm bg-card/80"
+                  onClick={() => generateStorefront(category.name)}
+                >
+                  <div className="text-center">
+                    <div className="text-5xl mb-6">{category.emoji}</div>
+                    <h3 className="font-semibold text-xl mb-3">
+                      {category.name}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {category.description}
+                    </p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
