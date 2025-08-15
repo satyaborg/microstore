@@ -4,6 +4,7 @@ import Gradients from "@/components/gradients";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Image } from "@/components/ai-elements/image";
 import {
   Clock,
   Loader2,
@@ -125,13 +126,48 @@ Create 6-8 realistic products that would sell well for this concept. Include var
       if (jsonMatch) {
         const storeData = JSON.parse(jsonMatch[0]);
         if (storeData.products) {
-          // Add placeholder images and format products
-          const formattedProducts = storeData.products.map(
-            (product, index) => ({
-              ...product,
-              image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
-                product.name.slice(0, 20)
-              )}`,
+          // Generate AI images for each product
+          const formattedProducts = await Promise.all(
+            storeData.products.map(async (product, index) => {
+              try {
+                const imageResponse = await fetch("/api/generate-product-image", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    productName: product.name,
+                    productDescription: product.description,
+                    category: product.category || prompt,
+                  }),
+                });
+
+                if (imageResponse.ok) {
+                  const imageData = await imageResponse.json();
+                  return {
+                    ...product,
+                    image: `data:${imageData.mediaType};base64,${imageData.base64}`,
+                    imageData: imageData, // Store full image data for the Image component
+                  };
+                } else {
+                  // Fallback to placeholder if image generation fails
+                  return {
+                    ...product,
+                    image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+                      product.name.slice(0, 20)
+                    )}`,
+                  };
+                }
+              } catch (error) {
+                console.error(`Error generating image for ${product.name}:`, error);
+                // Fallback to placeholder
+                return {
+                  ...product,
+                  image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+                    product.name.slice(0, 20)
+                  )}`,
+                };
+              }
             })
           );
           setGeneratedProducts(formattedProducts);
@@ -140,23 +176,59 @@ Create 6-8 realistic products that would sell well for this concept. Include var
       }
     } catch (error) {
       console.error("Error generating storefront:", error);
-      // Fallback to mock data
-      const mockProducts = [
+      // Fallback to mock data with AI generated images
+      const mockProducts = await Promise.all([
         {
           id: 1,
           name: `${prompt} Product 1`,
           price: 24.99,
-          image: "https://via.placeholder.com/300x300?text=Product+1",
           description: `Premium ${prompt.toLowerCase()} item with excellent quality`,
         },
         {
           id: 2,
           name: `${prompt} Product 2`,
           price: 12.99,
-          image: "https://via.placeholder.com/300x300?text=Product+2",
           description: `Popular ${prompt.toLowerCase()} choice for enthusiasts`,
         },
-      ];
+      ].map(async (product) => {
+        try {
+          const imageResponse = await fetch("/api/generate-product-image", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              productName: product.name,
+              productDescription: product.description,
+              category: prompt,
+            }),
+          });
+
+          if (imageResponse.ok) {
+            const imageData = await imageResponse.json();
+            return {
+              ...product,
+              image: `data:${imageData.mediaType};base64,${imageData.base64}`,
+              imageData: imageData,
+            };
+          } else {
+            return {
+              ...product,
+              image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+                product.name.slice(0, 20)
+              )}`,
+            };
+          }
+        } catch (error) {
+          console.error(`Error generating fallback image for ${product.name}:`, error);
+          return {
+            ...product,
+            image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+              product.name.slice(0, 20)
+            )}`,
+          };
+        }
+      }));
       setGeneratedProducts(mockProducts);
     } finally {
       setIsGenerating(false);
@@ -190,11 +262,19 @@ Create 6-8 realistic products that would sell well for this concept. Include var
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {generatedProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
+                {product.imageData ? (
+                  <Image
+                    {...product.imageData}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                ) : (
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                )}
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
                   <p className="text-muted-foreground text-sm mb-3">
@@ -408,7 +488,7 @@ Create 6-8 realistic products that would sell well for this concept. Include var
                     Creating Your Store
                   </h3>
                   <p className="text-muted-foreground">
-                    Our AI is generating personalized products and store details
+                    Our AI is generating personalized products, store details, and custom product images
                     for "{selectedCategory}"...
                   </p>
                   <div className="mt-4 w-full bg-border/20 rounded-full h-2">
