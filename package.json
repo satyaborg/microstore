@@ -6,10 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "migrate": "scripts/migrate.sh",
     "lint": "next lint"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.14",
+    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.55.0",
     "class-variance-authority": "^0.7.1",
