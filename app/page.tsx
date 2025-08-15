@@ -350,35 +350,44 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
 
   const confirmAddToCart = (quantity: number) => {
     if (!selectedProduct) return;
-    
-    const existingItem = cartItems.find(item => item.id === selectedProduct.id);
-    
+
+    const existingItem = cartItems.find(
+      (item) => item.id === selectedProduct.id
+    );
+
     if (existingItem) {
-      setCartItems(cartItems.map(item => 
-        item.id === selectedProduct.id 
-          ? { ...item, quantity: item.quantity + quantity }
-          : item
-      ));
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === selectedProduct.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        )
+      );
     } else {
       setCartItems([...cartItems, { ...selectedProduct, quantity }]);
     }
-    
+
     setShowCartDialog(false);
     setSelectedProduct(null);
   };
 
   const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity <= 0) {
-      setCartItems(cartItems.filter(item => item.id !== id));
+      setCartItems(cartItems.filter((item) => item.id !== id));
     } else {
-      setCartItems(cartItems.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      ));
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === id ? { ...item, quantity: newQuantity } : item
+        )
+      );
     }
   };
 
   const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
   };
 
   const getCartItemCount = () => {
@@ -391,94 +400,121 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
         <header className="border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold">{selectedCategory} Store</h1>
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCartDialog(true)}
-                  className="relative"
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Cart
-                  {getCartItemCount() > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {getCartItemCount()}
-                    </span>
-                  )}
-                </Button>
-                <Button onClick={resetGenerator} variant="default">
-                  Publish Store
-                </Button>
-              </div>
+              <h1 className="text-2xl font-bold">MicroStore</h1>
+              <Button onClick={resetGenerator} variant="default">
+                Publish
+              </Button>
             </div>
           </div>
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-12">
-            {generatedProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden">
-                {product.imageData ? (
-                  <Image
-                    {...product.imageData}
-                    alt={product.name}
-                    className="w-full h-80 object-cover"
-                  />
-                ) : (
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-80 object-cover"
-                  />
-                )}
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                  <p className="text-muted-foreground text-sm mb-3">
-                    {product.description}
+          {/* Store Preview Card */}
+          <Card className="mb-8 border-2 border-dashed border-primary/20 bg-primary/5">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Store Preview</h2>
+                  <p className="text-muted-foreground">
+                    Your {selectedCategory.toLowerCase()} store is ready!
                   </p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xl font-bold">${product.price}</span>
-                    <Button size="sm" onClick={() => addToCart(product)}>Add to Cart</Button>
+                </div>
+                <div className="text-sm text-muted-foreground bg-background px-3 py-1 rounded-full border">
+                  Preview Mode
+                </div>
+              </div>
+
+              {/* Store Preview Container */}
+              <div className="bg-background rounded-lg border overflow-hidden">
+                {/* Store Navigation */}
+                <div className="border-b bg-background">
+                  <div className="px-6 py-4">
+                    <div className="flex justify-between items-center">
+                      <h1 className="text-xl font-bold">
+                        {selectedCategory} Store
+                      </h1>
+                      <div className="flex items-center gap-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowCartDialog(true)}
+                          className="relative"
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          Cart
+                          {getCartItemCount() > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                              {getCartItemCount()}
+                            </span>
+                          )}
+                        </Button>
+                        <Button size="sm" variant="ghost">
+                          About
+                        </Button>
+                        <Button size="sm" variant="ghost">
+                          Contact
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
 
-          <div className="">
+                {/* Store Content */}
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+                    {generatedProducts.map((product) => (
+                      <Card key={product.id} className="overflow-hidden">
+                        {product.imageData ? (
+                          <Image
+                            {...product.imageData}
+                            alt={product.name}
+                            className="w-full h-64 object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-64 object-cover"
+                          />
+                        )}
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold text-lg mb-2">
+                            {product.name}
+                          </h3>
+                          <p className="text-muted-foreground text-sm mb-3">
+                            {product.description}
+                          </p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xl font-bold">
+                              ${product.price}
+                            </span>
+                            <Button
+                              size="sm"
+                              onClick={() => addToCart(product)}
+                            >
+                              Add to Cart
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Find your customers section */}
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-4">Find your customers</h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Create Facebook & Instagram ads from your landing page content
+                {/* Launch targeted ads to reach the right audience for your {selectedCategory.toLowerCase()} products */}
+              </p>
+            </div>
+
             <AdLauncher />
-            {/* <Card>
-              <CardHeader>
-                <CardTitle>Analytics Dashboard</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Total Views:</span>
-                  <span className="font-semibold">1,247</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Conversion Rate:</span>
-                  <span className="font-semibold">3.2%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Revenue:</span>
-                  <span className="font-semibold">$892.45</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Checkout</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Input type="email" placeholder="Email address" />
-                <Input type="text" placeholder="Full name" />
-                <Button className="w-full" size="lg">
-                  Complete Purchase
-                </Button>
-              </CardContent>
-            </Card> */}
           </div>
         </main>
 
@@ -491,18 +527,20 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                 {selectedProduct ? "Add to Cart" : "Shopping Cart"}
               </DialogTitle>
               <DialogDescription>
-                {selectedProduct ? "Choose quantity and add to your cart" : `You have ${getCartItemCount()} items in your cart`}
+                {selectedProduct
+                  ? "Choose quantity and add to your cart"
+                  : `You have ${getCartItemCount()} items in your cart`}
               </DialogDescription>
             </DialogHeader>
 
             {selectedProduct ? (
-              <AddToCartForm 
-                product={selectedProduct} 
+              <AddToCartForm
+                product={selectedProduct}
                 onConfirm={confirmAddToCart}
                 onCancel={() => setShowCartDialog(false)}
               />
             ) : (
-              <CartView 
+              <CartView
                 items={cartItems}
                 onUpdateQuantity={updateQuantity}
                 onClose={() => setShowCartDialog(false)}
@@ -1053,7 +1091,9 @@ function AddToCartForm({ product, onConfirm, onCancel }: any) {
           <Input
             type="number"
             value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+            onChange={(e) =>
+              setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+            }
             className="w-20 text-center"
             min="1"
           />
@@ -1075,9 +1115,7 @@ function AddToCartForm({ product, onConfirm, onCancel }: any) {
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button onClick={() => onConfirm(quantity)}>
-            Add to Cart
-          </Button>
+          <Button onClick={() => onConfirm(quantity)}>Add to Cart</Button>
         </div>
       </div>
     </div>
@@ -1138,7 +1176,9 @@ function CartView({ items, onUpdateQuantity, onClose, getCartTotal }: any) {
               </div>
             </div>
             <div className="text-right">
-              <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+              <p className="font-semibold">
+                ${(item.price * item.quantity).toFixed(2)}
+              </p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1155,15 +1195,15 @@ function CartView({ items, onUpdateQuantity, onClose, getCartTotal }: any) {
       <div className="border-t pt-4">
         <div className="flex justify-between items-center mb-4">
           <span className="text-lg font-semibold">Total:</span>
-          <span className="text-2xl font-bold">${getCartTotal().toFixed(2)}</span>
+          <span className="text-2xl font-bold">
+            ${getCartTotal().toFixed(2)}
+          </span>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onClose} className="flex-1">
             Continue Shopping
           </Button>
-          <Button className="flex-1">
-            Checkout
-          </Button>
+          <Button className="flex-1">Checkout</Button>
         </div>
       </div>
     </div>
