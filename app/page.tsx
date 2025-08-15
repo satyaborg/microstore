@@ -6,51 +6,62 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
-  const [trend, setTrend] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [showStorefront, setShowStorefront] = useState(false);
   const [generatedProducts, setGeneratedProducts] = useState([]);
 
-  const generateStorefront = () => {
-    if (!trend.trim()) return;
-    
+  const categories = [
+    { name: "Fashion & Apparel", emoji: "👕", description: "Clothing, shoes, accessories" },
+    { name: "Home & Garden", emoji: "🏠", description: "Furniture, decor, tools" },
+    { name: "Electronics", emoji: "📱", description: "Gadgets, computers, tech" },
+    { name: "Health & Beauty", emoji: "💄", description: "Skincare, cosmetics, wellness" },
+    { name: "Sports & Fitness", emoji: "⚽", description: "Equipment, gear, supplements" },
+    { name: "Books & Media", emoji: "📚", description: "Books, movies, music" },
+    { name: "Food & Beverages", emoji: "🍕", description: "Gourmet, snacks, drinks" },
+    { name: "Toys & Games", emoji: "🎮", description: "Kids toys, board games" },
+    { name: "Handmade & Crafts", emoji: "🎨", description: "Artisan, DIY, custom items" }
+  ];
+
+  const generateStorefront = (category) => {
     const mockProducts = [
       {
         id: 1,
-        name: `${trend} T-Shirt`,
+        name: `${category} Product 1`,
         price: 24.99,
         image: "https://via.placeholder.com/300x300?text=Product+1",
-        description: `Trendy ${trend} themed t-shirt with premium quality fabric`
+        description: `Premium ${category.toLowerCase()} item with excellent quality`
       },
       {
         id: 2,
-        name: `${trend} Mug`,
+        name: `${category} Product 2`,
         price: 12.99,
         image: "https://via.placeholder.com/300x300?text=Product+2",
-        description: `Perfect ${trend} coffee mug for enthusiasts`
+        description: `Popular ${category.toLowerCase()} choice for enthusiasts`
       },
       {
         id: 3,
-        name: `${trend} Sticker Pack`,
+        name: `${category} Product 3`,
         price: 5.99,
         image: "https://via.placeholder.com/300x300?text=Product+3",
-        description: `Collectible ${trend} sticker pack - 10 unique designs`
+        description: `Affordable ${category.toLowerCase()} option with great value`
       },
       {
         id: 4,
-        name: `${trend} Hoodie`,
+        name: `${category} Product 4`,
         price: 39.99,
         image: "https://via.placeholder.com/300x300?text=Product+4",
-        description: `Cozy ${trend} themed hoodie for all seasons`
+        description: `Premium ${category.toLowerCase()} item for serious buyers`
       }
     ];
     
     setGeneratedProducts(mockProducts);
+    setSelectedCategory(category);
     setShowStorefront(true);
   };
 
   const resetGenerator = () => {
     setShowStorefront(false);
-    setTrend("");
+    setSelectedCategory("");
     setGeneratedProducts([]);
   };
 
@@ -60,7 +71,7 @@ export default function Home() {
         <header className="border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold">{trend} Store</h1>
+              <h1 className="text-2xl font-bold">{selectedCategory} Store</h1>
               <Button onClick={resetGenerator} variant="outline">
                 Create New Store
               </Button>
@@ -130,59 +141,31 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+      <div className="max-w-4xl w-full">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4">
-            Micro-Storefront Generator
+            What do you want to sell?
           </h1>
           <p className="text-xl text-muted-foreground">
-            Turn any trend into a pop-up online store in seconds
+            Choose a category to start building your store
           </p>
         </div>
 
-        <Card className="p-8">
-          <div className="mb-6">
-            <label htmlFor="trend" className="block text-lg font-semibold mb-3">
-              What's trending? 🔥
-            </label>
-            <Input
-              id="trend"
-              type="text"
-              value={trend}
-              onChange={(e) => setTrend(e.target.value)}
-              placeholder="e.g., Barbenheimer merch, Taylor Swift tour mugs, AI art prints..."
-              className="text-lg py-3"
-              onKeyPress={(e) => e.key === 'Enter' && generateStorefront()}
-            />
-          </div>
-
-          <Button
-            onClick={generateStorefront}
-            disabled={!trend.trim()}
-            className="w-full text-lg py-4"
-            size="lg"
-          >
-            🚀 Generate My Store
-          </Button>
-
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="p-4">
-              <div className="text-2xl mb-2">🤖</div>
-              <div className="font-semibold">AI-Generated</div>
-              <div className="text-sm text-muted-foreground">Products & descriptions</div>
-            </div>
-            <div className="p-4">
-              <div className="text-2xl mb-2">⚡</div>
-              <div className="font-semibold">Instant Setup</div>
-              <div className="text-sm text-muted-foreground">Ready in seconds</div>
-            </div>
-            <div className="p-4">
-              <div className="text-2xl mb-2">📊</div>
-              <div className="font-semibold">Built-in Analytics</div>
-              <div className="text-sm text-muted-foreground">Track performance</div>
-            </div>
-          </div>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <Card 
+              key={category.name} 
+              className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => generateStorefront(category.name)}
+            >
+              <div className="text-center">
+                <div className="text-4xl mb-4">{category.emoji}</div>
+                <h3 className="font-semibold text-lg mb-2">{category.name}</h3>
+                <p className="text-sm text-muted-foreground">{category.description}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
