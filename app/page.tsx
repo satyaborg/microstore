@@ -4,8 +4,10 @@ import Gradients from "@/components/gradients";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useChat } from "@ai-sdk/react";
 import {
   Clock,
+  Loader2,
   Menu,
   Shield,
   Star,
@@ -14,7 +16,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -22,6 +24,46 @@ export default function Home() {
   const [generatedProducts, setGeneratedProducts] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [storePrompt, setStorePrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const { messages, append, isLoading } = useChat({
+    api: '/api/chat'
+  });
+
+  // Watch for AI responses and parse generated products
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (
+      lastMessage &&
+      lastMessage.role === "assistant" &&
+      lastMessage.content
+    ) {
+      try {
+        // Try to extract JSON from the response
+        const jsonMatch = lastMessage.content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const storeData = JSON.parse(jsonMatch[0]);
+          if (storeData.products) {
+            // Add placeholder images and format products
+            const formattedProducts = storeData.products.map(
+              (product, index) => ({
+                ...product,
+                image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+                  product.name.slice(0, 20)
+                )}`,
+              })
+            );
+            setGeneratedProducts(formattedProducts);
+            setShowStorefront(true);
+            setIsGenerating(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing AI response:", error);
+        setIsGenerating(false);
+      }
+    }
+  }, [messages]);
 
   const categories = [
     {
@@ -80,47 +122,66 @@ export default function Home() {
     { text: "Viral TikTok gadgets & life hacks", emoji: "📱" },
   ];
 
-  const generateStorefront = (category) => {
-    const mockProducts = [
-      {
-        id: 1,
-        name: `${category} Product 1`,
-        price: 24.99,
-        image: "https://via.placeholder.com/300x300?text=Product+1",
-        description: `Premium ${category.toLowerCase()} item with excellent quality`,
-      },
-      {
-        id: 2,
-        name: `${category} Product 2`,
-        price: 12.99,
-        image: "https://via.placeholder.com/300x300?text=Product+2",
-        description: `Popular ${category.toLowerCase()} choice for enthusiasts`,
-      },
-      {
-        id: 3,
-        name: `${category} Product 3`,
-        price: 5.99,
-        image: "https://via.placeholder.com/300x300?text=Product+3",
-        description: `Affordable ${category.toLowerCase()} option with great value`,
-      },
-      {
-        id: 4,
-        name: `${category} Product 4`,
-        price: 39.99,
-        image: "https://via.placeholder.com/300x300?text=Product+4",
-        description: `Premium ${category.toLowerCase()} item for serious buyers`,
-      },
-    ];
+  const generateStorefront = async (prompt) => {
+    setIsGenerating(true);
+    setSelectedCategory(prompt);
 
-    setGeneratedProducts(mockProducts);
-    setSelectedCategory(category);
-    setShowStorefront(true);
+    try {
+      const aiPrompt = `Generate a detailed e-commerce store concept for: "${prompt}"
+
+Please provide a JSON response with the following structure:
+{
+  "storeName": "Creative store name",
+  "description": "Brief store description",
+  "products": [
+    {
+      "id": 1,
+      "name": "Product name",
+      "price": 24.99,
+      "description": "Detailed product description",
+      "category": "Product category"
+    }
+  ]
+}
+
+Create 6-8 realistic products that would sell well for this concept. Include varied pricing ($5-$150 range) and compelling product descriptions that would convert customers. Make products specific and trendy.`;
+
+      await append({
+        role: "user",
+        content: aiPrompt,
+      });
+    } catch (error) {
+      console.error("Error generating storefront:", error);
+      // Fallback to mock data
+      const mockProducts = [
+        {
+          id: 1,
+          name: `${prompt} Product 1`,
+          price: 24.99,
+          image: "https://via.placeholder.com/300x300?text=Product+1",
+          description: `Premium ${prompt.toLowerCase()} item with excellent quality`,
+        },
+        {
+          id: 2,
+          name: `${prompt} Product 2`,
+          price: 12.99,
+          image: "https://via.placeholder.com/300x300?text=Product+2",
+          description: `Popular ${prompt.toLowerCase()} choice for enthusiasts`,
+        },
+      ];
+      setGeneratedProducts(mockProducts);
+    } finally {
+      setIsGenerating(false);
+      setShowStorefront(true);
+    }
   };
 
   const resetGenerator = () => {
     setShowStorefront(false);
     setSelectedCategory("");
     setGeneratedProducts([]);
+    setStorePrompt("");
+    setIsGenerating(false);
   };
 
   if (showStorefront) {
@@ -311,8 +372,16 @@ export default function Home() {
                   onClick={() =>
                     storePrompt.trim() && generateStorefront(storePrompt)
                   }
+                  disabled={isGenerating || isLoading}
                 >
-                  Generate Store →
+                  {isGenerating || isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate Store →"
+                  )}
                 </Button>
               </div>
             </div>
@@ -326,8 +395,12 @@ export default function Home() {
                 {trendingIdeas.map((idea, index) => (
                   <button
                     key={index}
-                    onClick={() => setStorePrompt(idea.text)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 border border-border/50 hover:bg-card hover:border-border transition-all duration-200 text-sm backdrop-blur-sm"
+                    onClick={() => {
+                      setStorePrompt(idea.text);
+                      generateStorefront(idea.text);
+                    }}
+                    disabled={isGenerating || isLoading}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 border border-border/50 hover:bg-card hover:border-border transition-all duration-200 text-sm backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span>{idea.emoji}</span>
                     <span>{idea.text}</span>
@@ -335,6 +408,30 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            {/* AI Generation Loading State */}
+            {(isGenerating || isLoading) && (
+              <div className="mb-12">
+                <Card className="max-w-2xl mx-auto p-8 text-center border-border/50 backdrop-blur-sm bg-card/80">
+                  <div className="flex items-center justify-center mb-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">
+                    Creating Your Store
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Our AI is generating personalized products and store details
+                    for "{selectedCategory}"...
+                  </p>
+                  <div className="mt-4 w-full bg-border/20 rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full animate-pulse"
+                      style={{ width: "60%" }}
+                    ></div>
+                  </div>
+                </Card>
+              </div>
+            )}
 
             {/* Primary CTA */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
