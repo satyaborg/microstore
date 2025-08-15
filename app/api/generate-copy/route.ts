@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 function smartTruncate(text: string, maxLength: number): string {
   if (!text || text.length <= maxLength) {
@@ -46,8 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const ai = new GoogleGenAI({ apiKey });
 
       const prompt = `Create an engaging ad copy for "${body.product}". 
 
@@ -61,9 +60,11 @@ export async function POST(request: NextRequest) {
       
       Make it punchy, benefit-focused, and perfect for social media ads. Shorter is better!`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash-exp",
+        contents: prompt
+      });
+      const text = response.text;
 
       // Parse the JSON response
       const jsonMatch = text.match(/\{[\s\S]*\}/);

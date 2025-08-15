@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 interface SupplierGenerationRequest {
   product: string;
@@ -39,8 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const ai = new GoogleGenAI({ apiKey });
 
       const prompt = `Generate 3 realistic suppliers for "${body.product}". Make them relevant to the product category.
 
@@ -60,9 +59,11 @@ export async function POST(request: NextRequest) {
 
       Make company names realistic and locations appropriate for the product type. Vary the product counts (500-3000), ratings (4.2-4.9), shipping times (3-14 days), and minimum orders ($25-$150).`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash-exp",
+        contents: prompt
+      });
+      const text = response.text;
 
       // Parse the JSON response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
