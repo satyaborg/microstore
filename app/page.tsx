@@ -1,10 +1,10 @@
 "use client";
 
+import AdLauncher from "@/components/ad-launcher";
+import { Image } from "@/components/ai-elements/image";
 import Gradients from "@/components/gradients";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Image } from "@/components/ai-elements/image";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Clock,
   Loader2,
@@ -16,7 +16,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -25,6 +25,19 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [storePrompt, setStorePrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [trendingIdeas, setTrendingIdeas] = useState([
+    { text: "Taylor Swift concert merch & friendship bracelets", emoji: "💫" },
+    { text: "Barbie-core pink fashion accessories", emoji: "💗" },
+    { text: "Stanley tumbler dupes & viral water bottles", emoji: "🥤" },
+    { text: "Cottagecore mushroom lamps & fairy lights", emoji: "🍄" },
+    { text: "Crocs charms & jibbitz collections", emoji: "👟" },
+    { text: "Genshin Impact cosplay & anime figures", emoji: "⚔️" },
+    { text: "Rare Plants & trendy houseplant accessories", emoji: "🪴" },
+    { text: "BookTok aesthetic reading accessories", emoji: "📖" },
+    { text: "Korean skincare K-beauty glass skin sets", emoji: "✨" },
+    { text: "Viral TikTok gadgets & life hacks", emoji: "📱" },
+  ]);
+  const [trendsLoading, setTrendsLoading] = useState(true);
 
   const categories = [
     {
@@ -70,18 +83,66 @@ export default function Home() {
     },
   ];
 
-  const trendingIdeas = [
-    { text: "Taylor Swift concert merch & friendship bracelets", emoji: "💫" },
-    { text: "Barbie-core pink fashion accessories", emoji: "💗" },
-    { text: "Stanley tumbler dupes & viral water bottles", emoji: "🥤" },
-    { text: "Cottagecore mushroom lamps & fairy lights", emoji: "🍄" },
-    { text: "Crocs charms & jibbitz collections", emoji: "👟" },
-    { text: "Genshin Impact cosplay & anime figures", emoji: "⚔️" },
-    { text: "Rare Plants & trendy houseplant accessories", emoji: "🪴" },
-    { text: "BookTok aesthetic reading accessories", emoji: "📖" },
-    { text: "Korean skincare K-beauty glass skin sets", emoji: "✨" },
-    { text: "Viral TikTok gadgets & life hacks", emoji: "📱" },
-  ];
+  // Fetch Google Trends data on component mount
+  useEffect(() => {
+    const fetchTrends = async () => {
+      try {
+        setTrendsLoading(true);
+        const response = await fetch("/api/trends");
+        console.log("trends response", response);
+        const data = await response.json();
+
+        // Combine daily trends and real-time trends
+        const combinedTrends = [
+          ...data.dailyTrends.slice(0, 6).map((trend: any) => ({
+            text: trend.title,
+            emoji: getEmojiForTrend(trend.title),
+            traffic: trend.formattedTraffic,
+          })),
+          ...data.realTimeTrends.slice(0, 4).map((story: any) => ({
+            text: story.title,
+            emoji: getEmojiForTrend(story.title),
+            entityNames: story.entityNames,
+          })),
+        ];
+
+        setTrendingIdeas(combinedTrends);
+      } catch (error) {
+        console.error("Failed to fetch trends:", error);
+        // Keep default trending ideas if fetch fails
+      } finally {
+        setTrendsLoading(false);
+      }
+    };
+
+    fetchTrends();
+  }, []);
+
+  // Helper function to assign emojis based on trend keywords
+  const getEmojiForTrend = (title: string) => {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes("fashion") || lowerTitle.includes("clothing"))
+      return "👕";
+    if (lowerTitle.includes("food") || lowerTitle.includes("recipe"))
+      return "🍽️";
+    if (lowerTitle.includes("tech") || lowerTitle.includes("gadget"))
+      return "📱";
+    if (lowerTitle.includes("beauty") || lowerTitle.includes("skincare"))
+      return "💄";
+    if (lowerTitle.includes("sport") || lowerTitle.includes("fitness"))
+      return "⚽";
+    if (lowerTitle.includes("gaming") || lowerTitle.includes("game"))
+      return "🎮";
+    if (lowerTitle.includes("music") || lowerTitle.includes("concert"))
+      return "🎵";
+    if (lowerTitle.includes("art") || lowerTitle.includes("creative"))
+      return "🎨";
+    if (lowerTitle.includes("home") || lowerTitle.includes("decor"))
+      return "🏠";
+    if (lowerTitle.includes("plant") || lowerTitle.includes("garden"))
+      return "🌱";
+    return "🔥"; // Default fire emoji for trending
+  };
 
   const generateStorefront = async (prompt) => {
     setIsGenerating(true);
@@ -303,7 +364,8 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card>
+            <AdLauncher />
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Analytics Dashboard</CardTitle>
               </CardHeader>
@@ -334,7 +396,7 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                   Complete Purchase
                 </Button>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </main>
       </div>
@@ -470,28 +532,42 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
             {/* Trending Ideas */}
             <div className="mb-12">
               <p className="text-sm text-muted-foreground mb-4">
-                🔥 Trending ideas:
+                🔥 Trending ideas from Google Trends:
               </p>
-              <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
-                {trendingIdeas.map((idea, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setStorePrompt(idea.text);
-                      generateStorefront(idea.text);
-                    }}
-                    disabled={isGenerating}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 border border-border/50 hover:bg-card hover:border-border transition-all duration-200 text-sm backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span>{idea.emoji}</span>
-                    <span>{idea.text}</span>
-                  </button>
-                ))}
-              </div>
+              {trendsLoading ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="ml-2 text-muted-foreground">
+                    Loading trending topics...
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+                  {trendingIdeas.map((idea, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setStorePrompt(idea.text);
+                        generateStorefront(idea.text);
+                      }}
+                      disabled={isGenerating}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 border border-border/50 hover:bg-card hover:border-border transition-all duration-200 text-sm backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span>{idea.emoji}</span>
+                      <span>{idea.text}</span>
+                      {idea.traffic && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({idea.traffic})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* AI Generation Loading State */}
-            {isGenerating && (
+            {/* {isGenerating && (
               <div className="mb-12">
                 <Card className="max-w-2xl mx-auto p-8 text-center border-border/50 backdrop-blur-sm bg-card/80">
                   <div className="flex items-center justify-center mb-4">
@@ -512,17 +588,17 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                   </div>
                 </Card>
               </div>
-            )}
+            )} */}
 
             {/* Primary CTA */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+            {/* <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <Button size="lg" className="text-lg px-8 py-6">
                 🚀 Start Free Trial - No Credit Card
               </Button>
               <Button variant="outline" size="lg" className="text-lg px-8 py-6">
                 Watch Demo (2 min)
               </Button>
-            </div>
+            </div> */}
           </div>
         </section>
 
