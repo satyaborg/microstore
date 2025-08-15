@@ -42,7 +42,7 @@ interface Supplier {
 
 export default function AdLauncher() {
   const [formData, setFormData] = useState<AdFormData>({
-    product: "Stanley cups",
+    product: "",
     headline: "",
     description: "",
     imageUrl: "",
@@ -559,7 +559,7 @@ export default function AdLauncher() {
               </div>
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? "Creating Ad..." : "Launch Ad (PAUSED)"}
+                {loading ? "Creating Ad..." : "Launch Ad"}
               </Button>
             </form>
           </CardContent>
@@ -666,7 +666,7 @@ export default function AdLauncher() {
       {/* Analytics Dashboard */}
       <Card>
         <CardHeader>
-          <CardTitle>📊 Analytics Dashboard</CardTitle>
+          <CardTitle>Analytics Dashboard</CardTitle>
           <p className="text-sm text-muted-foreground">
             Performance metrics available 24 hours after launch
           </p>
@@ -734,7 +734,7 @@ export default function AdLauncher() {
       {/* Product Suppliers */}
       <Card>
         <CardHeader>
-          <CardTitle>🏭 Recommended Suppliers</CardTitle>
+          <CardTitle>Recommended Suppliers</CardTitle>
           <p className="text-sm text-muted-foreground">
             Top-rated suppliers for your products
           </p>

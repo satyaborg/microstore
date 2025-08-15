@@ -6,10 +6,22 @@ import Gradients from "@/components/gradients";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
   Clock,
   Loader2,
   Menu,
+  Minus,
+  Plus,
   Shield,
+  ShoppingCart,
   Star,
   TrendingUp,
   Users,
@@ -18,6 +30,16 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  imageData?: any;
+  quantity: number;
+}
+
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showStorefront, setShowStorefront] = useState(false);
@@ -25,6 +47,9 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [storePrompt, setStorePrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [showCartDialog, setShowCartDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [trendingIdeas, setTrendingIdeas] = useState([
     { text: "Taylor Swift concert merch & friendship bracelets", emoji: "💫" },
     { text: "Barbie-core pink fashion accessories", emoji: "💗" },
@@ -318,6 +343,48 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
     setIsGenerating(false);
   };
 
+  const addToCart = (product: any) => {
+    setSelectedProduct(product);
+    setShowCartDialog(true);
+  };
+
+  const confirmAddToCart = (quantity: number) => {
+    if (!selectedProduct) return;
+    
+    const existingItem = cartItems.find(item => item.id === selectedProduct.id);
+    
+    if (existingItem) {
+      setCartItems(cartItems.map(item => 
+        item.id === selectedProduct.id 
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      ));
+    } else {
+      setCartItems([...cartItems, { ...selectedProduct, quantity }]);
+    }
+    
+    setShowCartDialog(false);
+    setSelectedProduct(null);
+  };
+
+  const updateQuantity = (id: number, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      setCartItems(cartItems.filter(item => item.id !== id));
+    } else {
+      setCartItems(cartItems.map(item => 
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      ));
+    }
+  };
+
+  const getCartTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const getCartItemCount = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
   if (showStorefront) {
     return (
       <div className="min-h-screen bg-background">
@@ -325,9 +392,24 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
               <h1 className="text-2xl font-bold">{selectedCategory} Store</h1>
-              <Button onClick={resetGenerator} variant="outline">
-                Create New Store
-              </Button>
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCartDialog(true)}
+                  className="relative"
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Cart
+                  {getCartItemCount() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {getCartItemCount()}
+                    </span>
+                  )}
+                </Button>
+                <Button onClick={resetGenerator} variant="default">
+                  Publish Store
+                </Button>
+              </div>
             </div>
           </div>
         </header>
@@ -356,14 +438,14 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                   </p>
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold">${product.price}</span>
-                    <Button size="sm">Add to Cart</Button>
+                    <Button size="sm" onClick={() => addToCart(product)}>Add to Cart</Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="">
             <AdLauncher />
             {/* <Card>
               <CardHeader>
@@ -399,6 +481,36 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
             </Card> */}
           </div>
         </main>
+
+        {/* Add to Cart Dialog */}
+        <Dialog open={showCartDialog} onOpenChange={setShowCartDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5" />
+                {selectedProduct ? "Add to Cart" : "Shopping Cart"}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedProduct ? "Choose quantity and add to your cart" : `You have ${getCartItemCount()} items in your cart`}
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedProduct ? (
+              <AddToCartForm 
+                product={selectedProduct} 
+                onConfirm={confirmAddToCart}
+                onCancel={() => setShowCartDialog(false)}
+              />
+            ) : (
+              <CartView 
+                items={cartItems}
+                onUpdateQuantity={updateQuantity}
+                onClose={() => setShowCartDialog(false)}
+                getCartTotal={getCartTotal}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -896,6 +1008,164 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// Add to Cart Form Component
+function AddToCartForm({ product, onConfirm, onCancel }: any) {
+  const [quantity, setQuantity] = useState(1);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-4">
+        {product.imageData ? (
+          <Image
+            {...product.imageData}
+            alt={product.name}
+            className="w-24 h-24 object-cover rounded-lg"
+          />
+        ) : (
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-24 h-24 object-cover rounded-lg"
+          />
+        )}
+        <div className="flex-1">
+          <h3 className="font-semibold text-lg">{product.name}</h3>
+          <p className="text-muted-foreground text-sm">{product.description}</p>
+          <p className="text-xl font-bold mt-2">${product.price}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <label className="text-sm font-medium">Quantity:</label>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            disabled={quantity <= 1}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          <Input
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+            className="w-20 text-center"
+            min="1"
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setQuantity(quantity + 1)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-4 border-t">
+        <div className="text-lg font-semibold">
+          Total: ${(product.price * quantity).toFixed(2)}
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button onClick={() => onConfirm(quantity)}>
+            Add to Cart
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Cart View Component
+function CartView({ items, onUpdateQuantity, onClose, getCartTotal }: any) {
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">Your cart is empty</p>
+        <Button className="mt-4" onClick={onClose}>
+          Continue Shopping
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="max-h-96 overflow-y-auto space-y-4">
+        {items.map((item: CartItem) => (
+          <div key={item.id} className="flex gap-4 p-4 border rounded-lg">
+            {item.imageData ? (
+              <Image
+                {...item.imageData}
+                alt={item.name}
+                className="w-16 h-16 object-cover rounded-lg"
+              />
+            ) : (
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-16 h-16 object-cover rounded-lg"
+              />
+            )}
+            <div className="flex-1">
+              <h4 className="font-semibold">{item.name}</h4>
+              <p className="text-sm text-muted-foreground">${item.price}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <span className="w-8 text-center">{item.quantity}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onUpdateQuantity(item.id, 0)}
+                className="text-destructive hover:text-destructive"
+              >
+                Remove
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="border-t pt-4">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-lg font-semibold">Total:</span>
+          <span className="text-2xl font-bold">${getCartTotal().toFixed(2)}</span>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onClose} className="flex-1">
+            Continue Shopping
+          </Button>
+          <Button className="flex-1">
+            Checkout
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
