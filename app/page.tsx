@@ -1,23 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import Gradients from "@/components/gradients";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import Gradients from "@/components/gradients";
-import { Menu, X, Star, Zap, Shield, TrendingUp, Users, Clock } from "lucide-react";
+  Clock,
+  Menu,
+  Shield,
+  Star,
+  TrendingUp,
+  Users,
+  X,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showStorefront, setShowStorefront] = useState(false);
   const [generatedProducts, setGeneratedProducts] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [storePrompt, setStorePrompt] = useState("");
 
   const categories = [
     {
@@ -61,6 +65,19 @@ export default function Home() {
       emoji: "🎨",
       description: "Artisan, DIY, custom items",
     },
+  ];
+
+  const trendingIdeas = [
+    { text: "Taylor Swift concert merch & friendship bracelets", emoji: "💫" },
+    { text: "Barbie-core pink fashion accessories", emoji: "💗" },
+    { text: "Stanley tumbler dupes & viral water bottles", emoji: "🥤" },
+    { text: "Cottagecore mushroom lamps & fairy lights", emoji: "🍄" },
+    { text: "Crocs charms & jibbitz collections", emoji: "👟" },
+    { text: "Genshin Impact cosplay & anime figures", emoji: "⚔️" },
+    { text: "Rare Plants & trendy houseplant accessories", emoji: "🪴" },
+    { text: "BookTok aesthetic reading accessories", emoji: "📖" },
+    { text: "Korean skincare K-beauty glass skin sets", emoji: "✨" },
+    { text: "Viral TikTok gadgets & life hacks", emoji: "📱" },
   ];
 
   const generateStorefront = (category) => {
@@ -191,13 +208,21 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="font-bold text-xl">MicroStore</div>
-            
+
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
-              <Button variant="ghost" size="sm">Features</Button>
-              <Button variant="ghost" size="sm">Pricing</Button>
-              <Button variant="ghost" size="sm">About</Button>
-              <Button variant="outline" size="sm">Sign In</Button>
+              <Button variant="ghost" size="sm">
+                Features
+              </Button>
+              <Button variant="ghost" size="sm">
+                Pricing
+              </Button>
+              <Button variant="ghost" size="sm">
+                About
+              </Button>
+              <Button variant="outline" size="sm">
+                Sign In
+              </Button>
               <Button size="sm">Start Free Trial</Button>
             </div>
 
@@ -208,7 +233,11 @@ export default function Home() {
                 size="sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </Button>
             </div>
           </div>
@@ -217,10 +246,18 @@ export default function Home() {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-border/40 py-4">
               <div className="flex flex-col space-y-3">
-                <Button variant="ghost" size="sm" className="justify-start">Features</Button>
-                <Button variant="ghost" size="sm" className="justify-start">Pricing</Button>
-                <Button variant="ghost" size="sm" className="justify-start">About</Button>
-                <Button variant="outline" size="sm">Sign In</Button>
+                <Button variant="ghost" size="sm" className="justify-start">
+                  Features
+                </Button>
+                <Button variant="ghost" size="sm" className="justify-start">
+                  Pricing
+                </Button>
+                <Button variant="ghost" size="sm" className="justify-start">
+                  About
+                </Button>
+                <Button variant="outline" size="sm">
+                  Sign In
+                </Button>
                 <Button size="sm">Start Free Trial</Button>
               </div>
             </div>
@@ -253,9 +290,51 @@ export default function Home() {
               What do you want to sell?
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
-              Launch your premium online store in seconds. No coding required, infinite possibilities. 
-              Average 3x higher conversion rates than traditional platforms.
+              Launch your premium online store in seconds. No coding required,
+              infinite possibilities. Average 3x higher conversion rates than
+              traditional platforms.
             </p>
+
+            {/* Store Prompt Input */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="relative">
+                <textarea
+                  placeholder="Describe your products..."
+                  value={storePrompt}
+                  onChange={(e) => setStorePrompt(e.target.value)}
+                  className="w-full h-32 p-6 text-xl resize-none border-2 border-border/50 backdrop-blur-sm bg-card/80 rounded-2xl focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all duration-200 placeholder:text-muted-foreground/70"
+                  rows={4}
+                />
+                <Button
+                  size="lg"
+                  className="absolute bottom-4 right-4 h-12 px-8 rounded-xl text-base font-semibold shadow-lg"
+                  onClick={() =>
+                    storePrompt.trim() && generateStorefront(storePrompt)
+                  }
+                >
+                  Generate Store →
+                </Button>
+              </div>
+            </div>
+
+            {/* Trending Ideas */}
+            <div className="mb-12">
+              <p className="text-sm text-muted-foreground mb-4">
+                🔥 Trending ideas:
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+                {trendingIdeas.map((idea, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setStorePrompt(idea.text)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 border border-border/50 hover:bg-card hover:border-border transition-all duration-200 text-sm backdrop-blur-sm"
+                  >
+                    <span>{idea.emoji}</span>
+                    <span>{idea.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Primary CTA */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
@@ -273,27 +352,46 @@ export default function Home() {
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Why MicroStore?</h2>
-              <p className="text-xl text-muted-foreground">Everything you need to launch and scale your online business</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Why MicroStore?
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Everything you need to launch and scale your online business
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
               <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
                 <Zap className="h-12 w-12 mx-auto mb-4 text-blue-500" />
-                <h3 className="font-semibold text-xl mb-2">Lightning Fast Setup</h3>
-                <p className="text-muted-foreground">Go from idea to live store in under 60 seconds. No technical skills required.</p>
+                <h3 className="font-semibold text-xl mb-2">
+                  Lightning Fast Setup
+                </h3>
+                <p className="text-muted-foreground">
+                  Go from idea to live store in under 60 seconds. No technical
+                  skills required.
+                </p>
               </Card>
-              
+
               <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
                 <TrendingUp className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                <h3 className="font-semibold text-xl mb-2">3x Higher Conversions</h3>
-                <p className="text-muted-foreground">AI-optimized designs and checkout flows that actually convert visitors to customers.</p>
+                <h3 className="font-semibold text-xl mb-2">
+                  3x Higher Conversions
+                </h3>
+                <p className="text-muted-foreground">
+                  AI-optimized designs and checkout flows that actually convert
+                  visitors to customers.
+                </p>
               </Card>
-              
+
               <Card className="p-6 text-center border-border/50 backdrop-blur-sm bg-card/80">
                 <Shield className="h-12 w-12 mx-auto mb-4 text-purple-500" />
-                <h3 className="font-semibold text-xl mb-2">Enterprise Security</h3>
-                <p className="text-muted-foreground">Bank-level security with automated backups and 99.9% uptime guarantee.</p>
+                <h3 className="font-semibold text-xl mb-2">
+                  Enterprise Security
+                </h3>
+                <p className="text-muted-foreground">
+                  Bank-level security with automated backups and 99.9% uptime
+                  guarantee.
+                </p>
               </Card>
             </div>
           </div>
@@ -303,22 +401,32 @@ export default function Home() {
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Trusted by entrepreneurs worldwide</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Trusted by entrepreneurs worldwide
+              </h2>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/80">
                 <div className="flex items-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
                 </div>
-                <p className="text-muted-foreground mb-4">"Launched my jewelry store in 45 seconds. Made $2,000 in the first week!"</p>
+                <p className="text-muted-foreground mb-4">
+                  "Launched my jewelry store in 45 seconds. Made $2,000 in the
+                  first week!"
+                </p>
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 mr-3"></div>
                   <div>
                     <p className="font-semibold">Sarah Chen</p>
-                    <p className="text-sm text-muted-foreground">Fashion Entrepreneur</p>
+                    <p className="text-sm text-muted-foreground">
+                      Fashion Entrepreneur
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -326,15 +434,23 @@ export default function Home() {
               <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/80">
                 <div className="flex items-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
                 </div>
-                <p className="text-muted-foreground mb-4">"The AI suggestions helped me optimize my store. Conversion rate went from 1% to 4.2%!"</p>
+                <p className="text-muted-foreground mb-4">
+                  "The AI suggestions helped me optimize my store. Conversion
+                  rate went from 1% to 4.2%!"
+                </p>
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-green-500 mr-3"></div>
                   <div>
                     <p className="font-semibold">Marcus Rodriguez</p>
-                    <p className="text-sm text-muted-foreground">Tech Gadgets Store</p>
+                    <p className="text-sm text-muted-foreground">
+                      Tech Gadgets Store
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -342,15 +458,23 @@ export default function Home() {
               <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/80">
                 <div className="flex items-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
                 </div>
-                <p className="text-muted-foreground mb-4">"Perfect for testing new product ideas. I've launched 5 successful stores this year!"</p>
+                <p className="text-muted-foreground mb-4">
+                  "Perfect for testing new product ideas. I've launched 5
+                  successful stores this year!"
+                </p>
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-red-500 mr-3"></div>
                   <div>
                     <p className="font-semibold">Emma Thompson</p>
-                    <p className="text-sm text-muted-foreground">Serial Entrepreneur</p>
+                    <p className="text-sm text-muted-foreground">
+                      Serial Entrepreneur
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -362,8 +486,12 @@ export default function Home() {
         <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose your category</h2>
-              <p className="text-xl text-muted-foreground">Select a category to see your store come to life</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Choose your category
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Select a category to see your store come to life
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
