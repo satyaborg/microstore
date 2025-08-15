@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.14",
+    "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.55.0",

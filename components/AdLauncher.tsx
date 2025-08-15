@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AdFormData {
+  product: string;
   headline: string;
   description: string;
   imageUrl: string;
@@ -30,6 +31,7 @@ interface AnalyticsData {
 
 export default function AdLauncher() {
   const [formData, setFormData] = useState<AdFormData>({
+    product: "Stanley cups",
     headline: "",
     description: "",
     imageUrl: "",
@@ -38,6 +40,8 @@ export default function AdLauncher() {
   });
   
   const [loading, setLoading] = useState(false);
+  const [imageGenerating, setImageGenerating] = useState(false);
+  const [copyGenerating, setCopyGenerating] = useState(false);
   const [result, setResult] = useState<AdResult | null>(null);
   const [error, setError] = useState("");
   const [analytics, setAnalytics] = useState<AnalyticsData>({
@@ -84,13 +88,87 @@ export default function AdLauncher() {
     setAnalytics(generateMockAnalytics());
   }, []);
 
+  const generateAdCopy = async () => {
+    if (!formData.product) {
+      setError("Please enter a product name first");
+      return;
+    }
+
+    setCopyGenerating(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/generate-copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product: formData.product
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate ad copy");
+      }
+
+      setFormData({ 
+        ...formData, 
+        headline: data.headline, 
+        description: data.description 
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Copy generation failed");
+    } finally {
+      setCopyGenerating(false);
+    }
+  };
+
+  const generateImage = async () => {
+    if (!formData.headline) {
+      setError("Please enter a headline first");
+      return;
+    }
+
+    setImageGenerating(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          headline: formData.headline,
+          description: formData.description
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate image");
+      }
+
+      setFormData({ ...formData, imageUrl: data.imageUrl });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Image generation failed");
+    } finally {
+      setImageGenerating(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setResult(null);
     
-    if (!formData.headline || !formData.description || !formData.imageUrl) {
-      setError("Please fill in all required fields");
+    if (!formData.product || !formData.headline || !formData.description) {
+      setError("Please fill in product, headline and description");
+      return;
+    }
+    
+    if (!formData.imageUrl) {
+      setError("Please generate an AI image first");
       return;
     }
 
@@ -138,6 +216,26 @@ export default function AdLauncher() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <label className="block text-sm font-medium mb-2">Product *</label>
+                <div className="space-y-3">
+                  <Input
+                    value={formData.product}
+                    onChange={(e) => setFormData({...formData, product: e.target.value})}
+                    placeholder="e.g., Stanley cups, iPhone cases, running shoes"
+                  />
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    className="w-full"
+                    onClick={generateAdCopy}
+                    disabled={copyGenerating || !formData.product}
+                  >
+                    {copyGenerating ? "Generating Ad Copy..." : "✨ Generate Ad Copy with AI"}
+                  </Button>
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium mb-2">Headline *</label>
                 <Input
                   value={formData.headline}
@@ -161,13 +259,24 @@ export default function AdLauncher() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Image URL *</label>
-                <Input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
-                />
+                <label className="block text-sm font-medium mb-2">Ad Image *</label>
+                <div className="space-y-3">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    className="w-full"
+                    onClick={generateImage}
+                    disabled={imageGenerating || !formData.headline}
+                  >
+                    {imageGenerating ? "Generating AI Image..." : "🎨 Generate AI Image"}
+                  </Button>
+                  {formData.imageUrl && (
+                    <div className="text-xs text-green-600">✅ Image generated successfully</div>
+                  )}
+                  {!formData.headline && (
+                    <div className="text-xs text-muted-foreground">Enter a headline first to generate image</div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -207,18 +316,23 @@ export default function AdLauncher() {
             <CardTitle>Ad Preview</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {formData.imageUrl && (
-              <div className="w-full h-48 bg-muted rounded-lg overflow-hidden">
+            <div className="w-full h-48 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+              {formData.imageUrl ? (
                 <img 
                   src={formData.imageUrl} 
-                  alt="Ad preview"
+                  alt="AI generated ad image"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjMuNGY0LWY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=";
+                    (e.target as HTMLImageElement).src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjMuNGY0LWY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIEVycm9yPC90ZXh0Pjwvc3ZnPg==";
                   }}
                 />
-              </div>
-            )}
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <div className="text-4xl mb-2">🎨</div>
+                  <div className="text-sm">AI image will appear here</div>
+                </div>
+              )}
+            </div>
             
             <div className="space-y-2">
               <div className="text-sm text-muted-foreground">Primary Text:</div>
