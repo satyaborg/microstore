@@ -50,6 +50,9 @@ export default function Home() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showCartDialog, setShowCartDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showPublishSuccessDialog, setShowPublishSuccessDialog] =
+    useState(false);
   const [trendingIdeas, setTrendingIdeas] = useState([
     { text: "Taylor Swift concert merch & friendship bracelets", emoji: "💫" },
     { text: "Barbie-core pink fashion accessories", emoji: "💗" },
@@ -119,19 +122,21 @@ export default function Home() {
 
         // Combine daily trends and real-time trends
         const combinedTrends = [
-          ...data.dailyTrends.slice(0, 6).map((trend: any) => ({
+          ...(data.dailyTrends || []).slice(0, 6).map((trend: any) => ({
             text: trend.title,
             emoji: getEmojiForTrend(trend.title),
             traffic: trend.formattedTraffic,
           })),
-          ...data.realTimeTrends.slice(0, 4).map((story: any) => ({
+          ...(data.realTimeTrends || []).slice(0, 4).map((story: any) => ({
             text: story.title,
             emoji: getEmojiForTrend(story.title),
             entityNames: story.entityNames,
           })),
         ];
 
-        setTrendingIdeas(combinedTrends);
+        if (combinedTrends.length > 0) {
+          setTrendingIdeas(combinedTrends);
+        }
       } catch (error) {
         console.error("Failed to fetch trends:", error);
         // Keep default trending ideas if fetch fails
@@ -400,8 +405,11 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
         <header className="border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold">MicroStore</h1>
-              <Button onClick={resetGenerator} variant="default">
+              <h1 className="text-2xl font-bold">VibeStore</h1>
+              <Button
+                onClick={() => setShowPublishDialog(true)}
+                variant="default"
+              >
                 Publish
               </Button>
             </div>
@@ -463,28 +471,30 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
                     {generatedProducts.map((product) => (
-                      <Card key={product.id} className="overflow-hidden">
-                        {product.imageData ? (
-                          <Image
-                            {...product.imageData}
-                            alt={product.name}
-                            className="w-full h-64 object-cover"
-                          />
-                        ) : (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-64 object-cover"
-                          />
-                        )}
-                        <CardContent className="p-4">
+                      <Card key={product.id} className="overflow-hidden flex flex-col">
+                        <div className="w-full h-64 overflow-hidden">
+                          {product.imageData ? (
+                            <Image
+                              {...product.imageData}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <CardContent className="p-4 flex flex-col flex-1">
                           <h3 className="font-semibold text-lg mb-2">
                             {product.name}
                           </h3>
-                          <p className="text-muted-foreground text-sm mb-3">
+                          <p className="text-muted-foreground text-sm mb-3 flex-1">
                             {product.description}
                           </p>
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center mt-auto">
                             <span className="text-xl font-bold">
                               ${product.price}
                             </span>
@@ -549,6 +559,90 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Publish Dialog */}
+        <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Publish Your Store</DialogTitle>
+              <DialogDescription>
+                Enter your store details to publish your{" "}
+                {selectedCategory.toLowerCase()} store.
+              </DialogDescription>
+            </DialogHeader>
+
+            <PublishForm
+              onPublish={() => {
+                setShowPublishDialog(false);
+                setShowPublishSuccessDialog(true);
+              }}
+              onCancel={() => setShowPublishDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Publish Success Dialog */}
+        <Dialog
+          open={showPublishSuccessDialog}
+          onOpenChange={setShowPublishSuccessDialog}
+        >
+          <DialogContent className="max-w-md text-center">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-center gap-2">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+                Store Published Successfully!
+              </DialogTitle>
+              <DialogDescription>
+                Your {selectedCategory.toLowerCase()} store is now live and
+                ready to accept orders.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Your store URL:
+                </p>
+                <p className="font-mono text-sm bg-background px-3 py-2 rounded border">
+                  vibestore.com/my-store
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => setShowPublishSuccessDialog(false)}
+                  className="w-full"
+                >
+                  View Live Store
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowPublishSuccessDialog(false);
+                    resetGenerator();
+                  }}
+                  className="w-full"
+                >
+                  Create Another Store
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -561,7 +655,7 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
       <nav className="relative z-10 border-b border-border/40 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="font-bold text-xl">MicroStore</div>
+            <div className="font-bold text-xl">VibeStore</div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
@@ -577,7 +671,6 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
               <Button variant="outline" size="sm">
                 Sign In
               </Button>
-              <Button size="sm">Start Free Trial</Button>
             </div>
 
             {/* Mobile menu button */}
@@ -757,7 +850,7 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Why MicroStore?
+                Why VibeStore?
               </h2>
               <p className="text-xl text-muted-foreground">
                 Everything you need to launch and scale your online business
@@ -926,7 +1019,7 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <div className="font-bold text-2xl mb-4">MicroStore</div>
+              <div className="font-bold text-2xl mb-4">VibeStore</div>
               <p className="text-muted-foreground mb-6 max-w-md">
                 The fastest way to turn your ideas into profitable online
                 stores. No coding required, infinite possibilities.
@@ -1038,7 +1131,7 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
 
           <div className="border-t border-border/40 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-muted-foreground text-sm">
-              © 2024 MicroStore. All rights reserved.
+              © 2024 VibeStore. All rights reserved.
             </p>
             <p className="text-muted-foreground text-sm mt-4 md:mt-0">
               Built with ❤️ for entrepreneurs
@@ -1047,6 +1140,96 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
         </div>
       </footer>
     </div>
+  );
+}
+
+// Publish Form Component
+function PublishForm({ onPublish, onCancel }: any) {
+  const [storeName, setStoreName] = useState("");
+  const [storeUrl, setStoreUrl] = useState("");
+  const [ownerName, setOwnerName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onPublish();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="storeName" className="block text-sm font-medium mb-2">
+          Store Name
+        </label>
+        <Input
+          id="storeName"
+          type="text"
+          placeholder="My Awesome Store"
+          value={storeName}
+          onChange={(e) => setStoreName(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="storeUrl" className="block text-sm font-medium mb-2">
+          Store URL
+        </label>
+        <div className="flex">
+          <span className="inline-flex items-center px-3 py-2 border border-r-0 border-border rounded-l-md bg-muted text-muted-foreground text-sm">
+            vibestore.com/
+          </span>
+          <Input
+            id="storeUrl"
+            type="text"
+            placeholder="my-store"
+            value={storeUrl}
+            onChange={(e) =>
+              setStoreUrl(
+                e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")
+              )
+            }
+            className="rounded-l-none"
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="ownerName" className="block text-sm font-medium mb-2">
+          Your Name
+        </label>
+        <Input
+          id="ownerName"
+          type="text"
+          placeholder="John Doe"
+          value={ownerName}
+          onChange={(e) => setOwnerName(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium mb-2">
+          Email Address
+        </label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="john@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit">Publish Store</Button>
+      </DialogFooter>
+    </form>
   );
 }
 

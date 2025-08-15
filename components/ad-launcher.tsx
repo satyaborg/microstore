@@ -351,12 +351,13 @@ export default function AdLauncher() {
     setError("");
 
     try {
-      const response = await fetch("/api/generate-image", {
+      const response = await fetch("/api/generate-product-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          headline: formData.headline,
-          description: formData.description,
+          productName: formData.product || formData.headline,
+          productDescription: formData.description || formData.headline,
+          category: "advertisement",
         }),
       });
 
@@ -366,7 +367,9 @@ export default function AdLauncher() {
         throw new Error(data.error || "Failed to generate image");
       }
 
-      setFormData({ ...formData, imageUrl: data.imageUrl });
+      // Convert the base64 image data to a data URL for display
+      const imageUrl = `data:${data.mediaType};base64,${data.base64}`;
+      setFormData({ ...formData, imageUrl });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Image generation failed");
     } finally {
