@@ -392,50 +392,41 @@ export default function AdLauncher() {
       {/* Analytics Dashboard */}
       <Card>
           <CardHeader>
-            <CardTitle>📊 Live Analytics</CardTitle>
-            <p className="text-sm text-muted-foreground">Mock performance data (simulated)</p>
+            <CardTitle>📊 Analytics Dashboard</CardTitle>
+            <p className="text-sm text-muted-foreground">Performance metrics available 24 hours after launch</p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {analytics.impressions.toLocaleString()}
-                </div>
-                <div className="text-sm font-medium text-muted-foreground">Impressions</div>
-                <div className="text-xs text-green-600 mt-1">+12.3%</div>
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">⏱️</div>
+              <div className="text-xl font-semibold mb-2">Metrics Updating Soon</div>
+              <div className="text-muted-foreground mb-6">
+                Analytics data will be available 24 hours after your ad campaign goes live
               </div>
-              
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {analytics.ctr}%
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-muted-foreground">---</div>
+                  <div className="text-sm font-medium text-muted-foreground">Impressions</div>
                 </div>
-                <div className="text-sm font-medium text-muted-foreground">CTR</div>
-                <div className="text-xs text-green-600 mt-1">+5.7%</div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  ${analytics.cpc}
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-muted-foreground">---%</div>
+                  <div className="text-sm font-medium text-muted-foreground">CTR</div>
                 </div>
-                <div className="text-sm font-medium text-muted-foreground">CPC</div>
-                <div className="text-xs text-red-600 mt-1">-8.2%</div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
-                  {analytics.conversions}
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-muted-foreground">$---</div>
+                  <div className="text-sm font-medium text-muted-foreground">CPC</div>
                 </div>
-                <div className="text-sm font-medium text-muted-foreground">Conversions</div>
-                <div className="text-xs text-green-600 mt-1">+18.9%</div>
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-muted-foreground">---</div>
+                  <div className="text-sm font-medium text-muted-foreground">Conversions</div>
+                </div>
               </div>
             </div>
             
             <div className="mt-6 pt-4 border-t">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Conversion Rate:</span>
-                <span className="font-medium">{analytics.conversionRate}%</span>
-              </div>
-              <div className="flex justify-between items-center text-sm mt-2">
                 <span className="text-muted-foreground">Estimated Daily Spend:</span>
                 <span className="font-medium">${formData.dailyBudget}</span>
               </div>

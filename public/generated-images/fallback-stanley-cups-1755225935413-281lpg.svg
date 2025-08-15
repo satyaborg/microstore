@@ -1,0 +1,9 @@
+
+    <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#06b6d4"/>
+      <text x="50%" y="45%" font-family="Arial, sans-serif" font-size="28" font-weight="bold" 
+            fill="#ffffff" text-anchor="middle" dominant-baseline="middle">Stanley cups</text>
+      <text x="50%" y="60%" font-family="Arial, sans-serif" font-size="16" 
+            fill="#ffffff" text-anchor="middle" dominant-baseline="middle">AI Generated Ad</text>
+    </svg>
+  
