@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     const { image } = await experimental_generateImage({
       model: openai.image("gpt-image-1"),
       prompt: prompt,
-      size: "1024x1024",
+      size: "512x512",
     });
 
     return Response.json({
