@@ -4,7 +4,6 @@ import Gradients from "@/components/gradients";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useChat } from "@ai-sdk/react";
 import {
   Clock,
   Loader2,
@@ -16,7 +15,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -25,45 +24,6 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [storePrompt, setStorePrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const { messages, append, isLoading } = useChat({
-    api: '/api/chat'
-  });
-
-  // Watch for AI responses and parse generated products
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (
-      lastMessage &&
-      lastMessage.role === "assistant" &&
-      lastMessage.content
-    ) {
-      try {
-        // Try to extract JSON from the response
-        const jsonMatch = lastMessage.content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const storeData = JSON.parse(jsonMatch[0]);
-          if (storeData.products) {
-            // Add placeholder images and format products
-            const formattedProducts = storeData.products.map(
-              (product, index) => ({
-                ...product,
-                image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
-                  product.name.slice(0, 20)
-                )}`,
-              })
-            );
-            setGeneratedProducts(formattedProducts);
-            setShowStorefront(true);
-            setIsGenerating(false);
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing AI response:", error);
-        setIsGenerating(false);
-      }
-    }
-  }, [messages]);
 
   const categories = [
     {
@@ -146,10 +106,38 @@ Please provide a JSON response with the following structure:
 
 Create 6-8 realistic products that would sell well for this concept. Include varied pricing ($5-$150 range) and compelling product descriptions that would convert customers. Make products specific and trendy.`;
 
-      await append({
-        role: "user",
-        content: aiPrompt,
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: aiPrompt }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate storefront");
+      }
+
+      const aiResponse = await response.text();
+
+      // Try to extract JSON from the response
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const storeData = JSON.parse(jsonMatch[0]);
+        if (storeData.products) {
+          // Add placeholder images and format products
+          const formattedProducts = storeData.products.map(
+            (product, index) => ({
+              ...product,
+              image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+                product.name.slice(0, 20)
+              )}`,
+            })
+          );
+          setGeneratedProducts(formattedProducts);
+          setShowStorefront(true);
+        }
+      }
     } catch (error) {
       console.error("Error generating storefront:", error);
       // Fallback to mock data
@@ -372,9 +360,9 @@ Create 6-8 realistic products that would sell well for this concept. Include var
                   onClick={() =>
                     storePrompt.trim() && generateStorefront(storePrompt)
                   }
-                  disabled={isGenerating || isLoading}
+                  disabled={isGenerating}
                 >
-                  {isGenerating || isLoading ? (
+                  {isGenerating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Generating...
@@ -399,7 +387,7 @@ Create 6-8 realistic products that would sell well for this concept. Include var
                       setStorePrompt(idea.text);
                       generateStorefront(idea.text);
                     }}
-                    disabled={isGenerating || isLoading}
+                    disabled={isGenerating}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 border border-border/50 hover:bg-card hover:border-border transition-all duration-200 text-sm backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span>{idea.emoji}</span>
@@ -410,7 +398,7 @@ Create 6-8 realistic products that would sell well for this concept. Include var
             </div>
 
             {/* AI Generation Loading State */}
-            {(isGenerating || isLoading) && (
+            {isGenerating && (
               <div className="mb-12">
                 <Card className="max-w-2xl mx-auto p-8 text-center border-border/50 backdrop-blur-sm bg-card/80">
                   <div className="flex items-center justify-center mb-4">
