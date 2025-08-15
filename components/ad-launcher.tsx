@@ -514,11 +514,11 @@ export default function AdLauncher() {
                       ? "Generating AI Image..."
                       : "🎨 Generate AI Image"}
                   </Button>
-                  {formData.imageUrl && (
+                  {/* {formData.imageUrl && (
                     <div className="text-xs text-green-600">
                       ✅ Image generated successfully
                     </div>
-                  )}
+                  )} */}
                   {!formData.headline && (
                     <div className="text-xs text-muted-foreground">
                       Enter a headline first to generate image
@@ -640,7 +640,7 @@ export default function AdLauncher() {
         <Card className="border-green-500">
           <CardHeader>
             <CardTitle className="text-green-700">
-              ✅ Ad Created Successfully!
+              Ad Created Successfully!
             </CardTitle>
           </CardHeader>
           <CardContent>

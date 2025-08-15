@@ -118,24 +118,25 @@ export default function Home() {
         setTrendsLoading(true);
         const response = await fetch("/api/trends");
         console.log("trends response", response);
-        const data = await response.json();
+        const result = await response.json();
 
-        // Combine daily trends and real-time trends
-        const combinedTrends = [
-          ...(data.dailyTrends || []).slice(0, 6).map((trend: any) => ({
-            text: trend.title,
-            emoji: getEmojiForTrend(trend.title),
+        if (result.success && result.data) {
+          // Extract trends from the nested data structure
+          const trendsData = result.data;
+          const dailyTrends =
+            trendsData.default?.trendingSearchesDays?.[0]?.trendingSearches ||
+            [];
+
+          // Map daily trends to our format
+          const combinedTrends = dailyTrends.slice(0, 10).map((trend: any) => ({
+            text: trend.title?.query || trend.title,
+            emoji: getEmojiForTrend(trend.title?.query || trend.title),
             traffic: trend.formattedTraffic,
-          })),
-          ...(data.realTimeTrends || []).slice(0, 4).map((story: any) => ({
-            text: story.title,
-            emoji: getEmojiForTrend(story.title),
-            entityNames: story.entityNames,
-          })),
-        ];
+          }));
 
-        if (combinedTrends.length > 0) {
-          setTrendingIdeas(combinedTrends);
+          if (combinedTrends.length > 0) {
+            setTrendingIdeas(combinedTrends);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch trends:", error);
@@ -150,28 +151,127 @@ export default function Home() {
 
   // Helper function to assign emojis based on trend keywords
   const getEmojiForTrend = (title: string) => {
+    if (!title) return "🔥";
+
     const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes("fashion") || lowerTitle.includes("clothing"))
-      return "👕";
-    if (lowerTitle.includes("food") || lowerTitle.includes("recipe"))
-      return "🍽️";
-    if (lowerTitle.includes("tech") || lowerTitle.includes("gadget"))
-      return "📱";
-    if (lowerTitle.includes("beauty") || lowerTitle.includes("skincare"))
-      return "💄";
-    if (lowerTitle.includes("sport") || lowerTitle.includes("fitness"))
-      return "⚽";
-    if (lowerTitle.includes("gaming") || lowerTitle.includes("game"))
-      return "🎮";
-    if (lowerTitle.includes("music") || lowerTitle.includes("concert"))
+
+    // Entertainment & Media
+    if (
+      lowerTitle.includes("movie") ||
+      lowerTitle.includes("film") ||
+      lowerTitle.includes("netflix")
+    )
+      return "🎬";
+    if (
+      lowerTitle.includes("music") ||
+      lowerTitle.includes("concert") ||
+      lowerTitle.includes("song")
+    )
       return "🎵";
-    if (lowerTitle.includes("art") || lowerTitle.includes("creative"))
-      return "🎨";
-    if (lowerTitle.includes("home") || lowerTitle.includes("decor"))
+    if (
+      lowerTitle.includes("tv") ||
+      lowerTitle.includes("show") ||
+      lowerTitle.includes("series")
+    )
+      return "📺";
+    if (
+      lowerTitle.includes("celebrity") ||
+      lowerTitle.includes("actor") ||
+      lowerTitle.includes("actress")
+    )
+      return "⭐";
+
+    // Technology & Gaming
+    if (
+      lowerTitle.includes("iphone") ||
+      lowerTitle.includes("android") ||
+      lowerTitle.includes("phone")
+    )
+      return "📱";
+    if (
+      lowerTitle.includes("tech") ||
+      lowerTitle.includes("gadget") ||
+      lowerTitle.includes("app")
+    )
+      return "💻";
+    if (
+      lowerTitle.includes("gaming") ||
+      lowerTitle.includes("game") ||
+      lowerTitle.includes("xbox") ||
+      lowerTitle.includes("playstation")
+    )
+      return "🎮";
+
+    // Fashion & Beauty
+    if (
+      lowerTitle.includes("fashion") ||
+      lowerTitle.includes("clothing") ||
+      lowerTitle.includes("outfit")
+    )
+      return "👕";
+    if (
+      lowerTitle.includes("beauty") ||
+      lowerTitle.includes("skincare") ||
+      lowerTitle.includes("makeup")
+    )
+      return "💄";
+    if (lowerTitle.includes("jewelry") || lowerTitle.includes("accessories"))
+      return "💎";
+
+    // Food & Lifestyle
+    if (
+      lowerTitle.includes("food") ||
+      lowerTitle.includes("recipe") ||
+      lowerTitle.includes("restaurant")
+    )
+      return "🍽️";
+    if (lowerTitle.includes("coffee") || lowerTitle.includes("drink"))
+      return "☕";
+    if (lowerTitle.includes("travel") || lowerTitle.includes("vacation"))
+      return "✈️";
+
+    // Sports & Health
+    if (
+      lowerTitle.includes("sport") ||
+      lowerTitle.includes("fitness") ||
+      lowerTitle.includes("workout")
+    )
+      return "⚽";
+    if (lowerTitle.includes("health") || lowerTitle.includes("medical"))
+      return "🏥";
+
+    // Home & Living
+    if (
+      lowerTitle.includes("home") ||
+      lowerTitle.includes("decor") ||
+      lowerTitle.includes("furniture")
+    )
       return "🏠";
     if (lowerTitle.includes("plant") || lowerTitle.includes("garden"))
       return "🌱";
-    return "🔥"; // Default fire emoji for trending
+
+    // Art & Creativity
+    if (
+      lowerTitle.includes("art") ||
+      lowerTitle.includes("creative") ||
+      lowerTitle.includes("design")
+    )
+      return "🎨";
+    if (lowerTitle.includes("book") || lowerTitle.includes("reading"))
+      return "📖";
+
+    // Business & Finance
+    if (lowerTitle.includes("business") || lowerTitle.includes("startup"))
+      return "💼";
+    if (
+      lowerTitle.includes("crypto") ||
+      lowerTitle.includes("bitcoin") ||
+      lowerTitle.includes("stock")
+    )
+      return "💰";
+
+    // Default fire emoji for trending
+    return "🔥";
   };
 
   const generateStorefront = async (prompt) => {
@@ -471,7 +571,10 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
                     {generatedProducts.map((product) => (
-                      <Card key={product.id} className="overflow-hidden flex flex-col">
+                      <Card
+                        key={product.id}
+                        className="overflow-hidden flex flex-col"
+                      >
                         <div className="w-full h-64 overflow-hidden">
                           {product.imageData ? (
                             <Image
@@ -733,8 +836,10 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl tracking-tight font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              What do you want to sell?
+            <h1 className="text-4xl md:text-5xl lg:text-6xl tracking-tight font-bold mb-6">
+              <span className="bg-gradient-to-r from-gray-900 via-gray-400 to-gray-900 text-transparent bg-clip-text">
+                What do you want to sell?
+              </span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
               Launch your premium online store in seconds. No coding required,
@@ -774,8 +879,9 @@ Create exactly 6 realistic products that would sell well for this concept. Inclu
 
             {/* Trending Ideas */}
             <div className="mb-12">
-              <p className="text-sm text-muted-foreground mb-4">
-                🔥 Trending ideas from Google Trends:
+              <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Trending ideas
               </p>
               {trendsLoading ? (
                 <div className="flex justify-center items-center py-8">
