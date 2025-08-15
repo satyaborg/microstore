@@ -29,6 +29,17 @@ interface AnalyticsData {
   conversionRate: number;
 }
 
+interface Supplier {
+  name: string;
+  productCount: number;
+  rating: number;
+  location: string;
+  shippingDays: string;
+  minOrder: string;
+  borderColor: string;
+  textColor: string;
+}
+
 export default function AdLauncher() {
   const [formData, setFormData] = useState<AdFormData>({
     product: "Stanley cups",
@@ -42,6 +53,7 @@ export default function AdLauncher() {
   const [loading, setLoading] = useState(false);
   const [imageGenerating, setImageGenerating] = useState(false);
   const [copyGenerating, setCopyGenerating] = useState(false);
+  const [suppliersGenerating, setSuppliersGenerating] = useState(false);
   const [result, setResult] = useState<AdResult | null>(null);
   const [error, setError] = useState("");
   const [analytics, setAnalytics] = useState<AnalyticsData>({
@@ -51,6 +63,7 @@ export default function AdLauncher() {
     conversions: 0,
     conversionRate: 0
   });
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   const ctaOptions = [
     { value: "LEARN_MORE", label: "Learn More" },
@@ -83,10 +96,106 @@ export default function AdLauncher() {
     };
   };
 
+  const generateRelevantSuppliers = (product: string): Supplier[] => {
+    const productLower = product.toLowerCase();
+    
+    // Categorize the product
+    let category = 'general';
+    if (productLower.includes('electronics') || productLower.includes('phone') || productLower.includes('laptop') || productLower.includes('tech')) {
+      category = 'electronics';
+    } else if (productLower.includes('clothing') || productLower.includes('fashion') || productLower.includes('shirt') || productLower.includes('dress')) {
+      category = 'fashion';
+    } else if (productLower.includes('home') || productLower.includes('kitchen') || productLower.includes('furniture') || productLower.includes('cup') || productLower.includes('bottle')) {
+      category = 'home';
+    } else if (productLower.includes('beauty') || productLower.includes('cosmetic') || productLower.includes('skincare')) {
+      category = 'beauty';
+    } else if (productLower.includes('toy') || productLower.includes('game') || productLower.includes('kids')) {
+      category = 'toys';
+    }
+
+    const supplierTemplates = {
+      electronics: [
+        { base: "TechSource Global", location: "Shenzhen, China", specialties: ["smartphones", "laptops", "accessories"] },
+        { base: "ElectroMax Industries", location: "Taipei, Taiwan", specialties: ["components", "gadgets", "cables"] },
+        { base: "Digital Dynamics Ltd", location: "Seoul, South Korea", specialties: ["displays", "audio", "gaming"] }
+      ],
+      fashion: [
+        { base: "Fashion Forward Co", location: "Milan, Italy", specialties: ["apparel", "accessories", "luxury"] },
+        { base: "Textile Masters", location: "Mumbai, India", specialties: ["fabrics", "clothing", "footwear"] },
+        { base: "Style Solutions", location: "Istanbul, Turkey", specialties: ["garments", "textiles", "fashion"] }
+      ],
+      home: [
+        { base: "Home Essentials Ltd", location: "Guangzhou, China", specialties: ["kitchenware", "appliances", "storage"] },
+        { base: "Living Space Co", location: "Ho Chi Minh, Vietnam", specialties: ["furniture", "decor", "organization"] },
+        { base: "Quality Home Goods", location: "Bangkok, Thailand", specialties: ["household", "kitchen", "garden"] }
+      ],
+      beauty: [
+        { base: "Beauty Innovations", location: "Paris, France", specialties: ["cosmetics", "skincare", "fragrance"] },
+        { base: "Glow Products Inc", location: "Seoul, South Korea", specialties: ["K-beauty", "skincare", "makeup"] },
+        { base: "Natural Beauty Co", location: "Los Angeles, USA", specialties: ["organic", "wellness", "beauty"] }
+      ],
+      toys: [
+        { base: "PlayTime Manufacturing", location: "Dongguan, China", specialties: ["toys", "games", "educational"] },
+        { base: "Fun Factory Ltd", location: "Hamburg, Germany", specialties: ["premium toys", "puzzles", "creativity"] },
+        { base: "KidJoy Products", location: "Osaka, Japan", specialties: ["electronic toys", "anime", "collectibles"] }
+      ],
+      general: [
+        { base: "Global Trade Partners", location: "Hong Kong", specialties: ["diverse products", "wholesale", "export"] },
+        { base: "Universal Suppliers", location: "Singapore", specialties: ["multi-category", "logistics", "sourcing"] },
+        { base: "Premier Products Co", location: "Dubai, UAE", specialties: ["premium goods", "international", "quality"] }
+      ]
+    };
+
+    const templates = supplierTemplates[category as keyof typeof supplierTemplates] || supplierTemplates.general;
+    const colors = [
+      { borderColor: "border-blue-200", textColor: "text-blue-700" },
+      { borderColor: "border-green-200", textColor: "text-green-700" },
+      { borderColor: "border-purple-200", textColor: "text-purple-700" }
+    ];
+
+    return templates.map((template, index) => ({
+      name: template.base,
+      productCount: Math.floor(Math.random() * 3000) + 500,
+      rating: Number((4.2 + Math.random() * 0.7).toFixed(1)),
+      location: template.location,
+      shippingDays: `${3 + Math.floor(Math.random() * 10)}-${7 + Math.floor(Math.random() * 14)} days`,
+      minOrder: `$${[25, 50, 100, 150][Math.floor(Math.random() * 4)]}`,
+      borderColor: colors[index].borderColor,
+      textColor: colors[index].textColor
+    }));
+  };
+
   useEffect(() => {
     // Initialize with mock analytics data on component mount
     setAnalytics(generateMockAnalytics());
   }, []);
+
+  const generateSuppliers = async () => {
+    setSuppliersGenerating(true);
+    
+    try {
+      const response = await fetch("/api/generate-suppliers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product: formData.product
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate suppliers");
+      }
+
+      setSuppliers(data.suppliers);
+    } catch (err) {
+      console.error("Supplier generation failed:", err);
+      // Don't show error to user for suppliers, just fail silently
+    } finally {
+      setSuppliersGenerating(false);
+    }
+  };
 
   const generateAdCopy = async () => {
     if (!formData.product) {
@@ -98,25 +207,33 @@ export default function AdLauncher() {
     setError("");
 
     try {
-      const response = await fetch("/api/generate-copy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product: formData.product
-        })
-      });
+      // Generate both ad copy and suppliers in parallel
+      const [copyResponse, suppliersPromise] = await Promise.allSettled([
+        fetch("/api/generate-copy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product: formData.product
+          })
+        }),
+        generateSuppliers()
+      ]);
 
-      const data = await response.json();
+      if (copyResponse.status === "fulfilled") {
+        const data = await copyResponse.value.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to generate ad copy");
+        if (!copyResponse.value.ok) {
+          throw new Error(data.error || "Failed to generate ad copy");
+        }
+
+        setFormData({ 
+          ...formData, 
+          headline: data.headline, 
+          description: data.description 
+        });
+      } else {
+        throw new Error("Failed to generate ad copy");
       }
-
-      setFormData({ 
-        ...formData, 
-        headline: data.headline, 
-        description: data.description 
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Copy generation failed");
     } finally {
@@ -230,7 +347,7 @@ export default function AdLauncher() {
                     onClick={generateAdCopy}
                     disabled={copyGenerating || !formData.product}
                   >
-                    {copyGenerating ? "Generating Ad Copy..." : "✨ Generate Ad Copy with AI"}
+                    {copyGenerating ? "Generating Content..." : "✨ Generate Ad Copy with AI"}
                   </Button>
                 </div>
               </div>
@@ -441,64 +558,48 @@ export default function AdLauncher() {
           <p className="text-sm text-muted-foreground">Top-rated suppliers for your products</p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="border-blue-200">
-              <CardContent className="pt-6">
-                <div className="text-center space-y-3">
-                  <div className="text-lg font-semibold text-blue-700">Global Electronics Co.</div>
-                  <div className="text-2xl font-bold">3,247</div>
-                  <div className="text-sm text-muted-foreground">Products Available</div>
-                  <div className="flex items-center justify-center space-x-1">
-                    <span className="text-yellow-500">★★★★★</span>
-                    <span className="text-sm font-medium">4.8</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">📍 Shenzhen, China</div>
-                  <div className="space-y-1 text-xs">
-                    <div>⚡ 3-7 days shipping</div>
-                    <div>📦 Min order: $50</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-green-200">
-              <CardContent className="pt-6">
-                <div className="text-center space-y-3">
-                  <div className="text-lg font-semibold text-green-700">Premium Goods Ltd.</div>
-                  <div className="text-2xl font-bold">1,892</div>
-                  <div className="text-sm text-muted-foreground">Products Available</div>
-                  <div className="flex items-center justify-center space-x-1">
-                    <span className="text-yellow-500">★★★★☆</span>
-                    <span className="text-sm font-medium">4.6</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">📍 Mumbai, India</div>
-                  <div className="space-y-1 text-xs">
-                    <div>⚡ 5-10 days shipping</div>
-                    <div>📦 Min order: $25</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-purple-200">
-              <CardContent className="pt-6">
-                <div className="text-center space-y-3">
-                  <div className="text-lg font-semibold text-purple-700">Euro Fashion Hub</div>
-                  <div className="text-2xl font-bold">956</div>
-                  <div className="text-sm text-muted-foreground">Products Available</div>
-                  <div className="flex items-center justify-center space-x-1">
-                    <span className="text-yellow-500">★★★★★</span>
-                    <span className="text-sm font-medium">4.7</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">📍 Milan, Italy</div>
-                  <div className="space-y-1 text-xs">
-                    <div>⚡ 7-14 days shipping</div>
-                    <div>📦 Min order: $100</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {suppliersGenerating ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🔄</div>
+              <div className="text-xl font-semibold mb-2">Generating Suppliers...</div>
+              <div className="text-muted-foreground">Finding relevant suppliers for your product</div>
+            </div>
+          ) : suppliers.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🏭</div>
+              <div className="text-xl font-semibold mb-2">No Suppliers Yet</div>
+              <div className="text-muted-foreground mb-4">
+                Click "Generate Ad Copy with AI" to discover relevant suppliers for your product
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {suppliers.map((supplier, index) => (
+                <Card key={index} className={supplier.borderColor}>
+                  <CardContent className="pt-6">
+                    <div className="text-center space-y-3">
+                      <div className={`text-lg font-semibold ${supplier.textColor}`}>{supplier.name}</div>
+                      <div className="text-2xl font-bold">{supplier.productCount.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">Products Available</div>
+                      <div className="flex items-center justify-center space-x-1">
+                        <span className="text-yellow-500">
+                          {"★".repeat(Math.floor(supplier.rating))}
+                          {supplier.rating % 1 !== 0 ? "☆" : ""}
+                          {"☆".repeat(5 - Math.ceil(supplier.rating))}
+                        </span>
+                        <span className="text-sm font-medium">{supplier.rating}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">📍 {supplier.location}</div>
+                      <div className="space-y-1 text-xs">
+                        <div>⚡ {supplier.shippingDays} shipping</div>
+                        <div>📦 Min order: {supplier.minOrder}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
